@@ -1,0 +1,15 @@
+#{extends 'main.html' /}
+#{set title:'Auctionator' /}
+
+<section id="auctions">
+  <div class="page-header" style="margin-top: 50px">
+    <h1>Auctions</h1>
+  </div>
+  <div class="row">
+  <ul>
+  #{list auctions, as:'auction'}
+    <li>${auction.endingDate.format("dd.MM.yyyy HH:mm")}: #{a @Application.show(auction.id)}${auction.name}#{/a}</li>
+  #{/list}
+  </ul>
+  </div>
+</section>

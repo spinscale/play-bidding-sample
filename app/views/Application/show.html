@@ -1,0 +1,123 @@
+#{extends 'main.html' /}
+#{set title:'Search results' /}
+
+<script>
+var socket;
+var isLoggedIn = ${session.get("name") != null};
+var isAuctionFinished = ${auction.isFinished()};
+var milliSecondsToEnd = ${auction.milliSecondsToEnd()};
+
+function endBid() {
+	$("#bidSubmit").removeClass("primary").addClass("disabled danger").html("Bid ended")
+	$("#bid").css("display", "none")
+}
+
+function createWebSocket() {
+    if ($.browser.mozilla) {
+		  socket = new MozWebSocket("@@{BidWebSocket.bid(auction.id)}")
+    } else {
+		  socket = new WebSocket("@@{BidWebSocket.bid(auction.id)}")
+    }
+
+    socket.onmessage = function (event) {
+    	if (event.data == "DONE") {
+    		endBid()
+    	} else {
+	    	$('#currentBid').html(event.data)
+    	}
+    }
+    socket.onclose = endBid
+}
+
+if (isLoggedIn) {
+	$(document).ready(function() {
+		$('#bidding').css("display", "block")
+		if (isAuctionFinished) {
+			endBid()
+		}
+		$('#bidSubmit').click(function() {
+			if (!$("#bidSubmit").hasClass("disabled")) {
+				var bid = $('#bid').val()
+				if (bid > 0) {
+		  	  		socket.send(bid)
+		  	  		console.log(bid)
+				}
+		  	}
+		})
+	})
+	createWebSocket()
+} else {
+    $(document).ready(function() {
+		$('#login').click(function() {
+		    $.ajax({
+		    	type: "POST",
+		    	url: "@{Application.login()}",
+		    	data: { name: $("#name").val() },
+		    	success: function() {
+		    		$('#login-modal').modal('hide')
+		    		$("#login-modal-link").remove()
+		    		$('#bidding').css("display", "block")
+		    		createWebSocket()
+		    	}
+		    })
+		})
+	})
+}
+
+#{if auction.isFinished()}
+$(document).ready(function() { endBid() })
+#{/if}
+
+if (milliSecondsToEnd > 0) {
+	setTimeout(endBid, milliSecondsToEnd)
+}
+</script>
+
+<section id="search-results">
+  <div class="page-header" style="margin-top: 50px">
+    <h1>${auction.name} <small>${auction.id}</small></h1>
+  </div>
+  <div class="row">
+
+  <div class="span8">
+    <img src="@{Application.showImage(auction.id)}" alt="Bidding image" style="border: 1px black solid" width="450"/>
+  </div>
+
+  <div class="span6">
+
+    <div style="; margin-bottom: 15px">
+    <span class="label notice" style="line-height: 36px; font-size: 30px; font-weight: bold" id="currentBid">
+      #{if auction.currentBid != null}${auction.currentBid.bid}#{/if}#{else}0.00#{/else} EUR
+    </span>
+    <div style="margin-top: 10px"><span>Ending date: ${auction.endingDate.format("dd.MM.yyyy HH:mm")}</span></div>
+    </div>
+    <div style="margin-bottom: 45px">
+    
+    <div id="bidding" style="display : none">
+	    <input id="bid" class="span2" type="text" name="bid" size="5"/>
+	    <button id="bidSubmit" type="submit" class="btn primary">Bid</button>
+    </div>
+
+    #{if session.get("name") == null}
+      <a id="login-modal-link" class="btn danger" data-controls-modal="login-modal" data-backdrop="static">Login to bid</a>
+      
+      <div id="login-modal" class="modal hide fade">
+            <div class="modal-header">
+              <a href="#" class="close">&times;</a>
+              <h3>Please enter your name to bid</h3>
+            </div>
+            <div class="modal-body">
+              <input type="text" id="name" name="name" placeholder="Your name" />
+            </div>
+            <div class="modal-footer">
+              <a href="#" class="btn primary" id="login">Start bidding</a>
+            </div>
+          </div>      
+    #{/if}
+    </div>
+    
+    ${auction.description.raw()}
+  </div>
+  
+  </div>
+</section>

@@ -1,0 +1,10 @@
+.project
+.settings
+.classpath
+data
+db
+eclipse
+lib/*
+modules/*
+test-result/*
+tmp

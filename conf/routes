@@ -1,0 +1,24 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                      Application.index
+GET     /all                   Application.listAllAuctions
+GET     /auction/{id}          Application.show
+GET     /auction/{id}/image    Application.showImage
+POST	/login		           Application.login
+POST	/logout		           Application.logout
+
+WS      /bid/{auctionId}       BidWebSocket.bid
+
+*       /admin                 module:crud
+
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                staticDir:public
+
+# Catch all
+*       /{controller}/{action}                  {controller}.{action}
