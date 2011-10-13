@@ -20,14 +20,22 @@ function createWebSocket() {
     }
 
     socket.onmessage = function (event) {
-    	if (event.data == "DONE") {
-    		endBid()
-    	} else {
-	    	$('#currentBid').html(event.data)
-    	}
+	    $('#currentBid').html(event.data)
     }
     socket.onclose = endBid
 }
+
+$(document).ready(function() {
+	$('#bidSubmit').click(function() {
+		if (!$("#bidSubmit").hasClass("disabled")) {
+			var bid = $('#bid').val()
+			if (bid > 0) {
+	  	  		socket.send(bid)
+	  	  		console.log(bid)
+			}
+	  	}
+	})
+})
 
 if (isLoggedIn) {
 	$(document).ready(function() {
@@ -35,15 +43,6 @@ if (isLoggedIn) {
 		if (isAuctionFinished) {
 			endBid()
 		}
-		$('#bidSubmit').click(function() {
-			if (!$("#bidSubmit").hasClass("disabled")) {
-				var bid = $('#bid').val()
-				if (bid > 0) {
-		  	  		socket.send(bid)
-		  	  		console.log(bid)
-				}
-		  	}
-		})
 	})
 	createWebSocket()
 } else {

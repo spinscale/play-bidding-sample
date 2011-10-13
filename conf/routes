@@ -8,7 +8,7 @@ GET     /all                   Application.listAllAuctions
 GET     /auction/{id}          Application.show
 GET     /auction/{id}/image    Application.showImage
 POST	/login		           Application.login
-POST	/logout		           Application.logout
+GET     /logout		           Application.logout
 
 WS      /bid/{auctionId}       BidWebSocket.bid
 
